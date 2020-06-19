@@ -1,5 +1,6 @@
 import cv2
 import numpy
+import math
 
 
 # def passs(x) :
@@ -25,9 +26,9 @@ import numpy
 #     image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
 
 
-# table = cv2.imread("Photos/DSC_0344.jpg")
-# table = cv2.pyrDown(table)
-# table = cv2.pyrDown(table)
+table = cv2.imread("Photos/DSC_0344.jpg")
+table = cv2.pyrDown(table)
+table = cv2.pyrDown(table)
 # cv2.imshow("original", table)
 # table_HSV = cv2.cvtColor(table, cv2.COLOR_BGR2HSV)
 #
@@ -59,20 +60,28 @@ import numpy
 #     cv2.imshow("contours", table)
 
 
-path = "Photos/DSC_0346.jpg"
-template = cv2.imread(path)         # 3920 x 2204 px
-template = cv2.pyrDown(template)    # 1960 x 1102 px
-template = cv2.pyrDown(template)    # 980 x 551 px
-template = template[120:380,280:700]
+MMs = [0]
+MMs.clear()
 
-template_masked = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-_, template_masked = cv2.threshold(template_masked, 112, 255, cv2.THRESH_BINARY_INV)
-template_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
-template_masked = cv2.morphologyEx(template_masked, cv2.MORPH_CLOSE, template_kernel, iterations=1)
+for i in range(346,364) :
+    path = "Photos/DSC_0" + str(i) + ".jpg"
+    template = cv2.imread(path)         # 3920 x 2204 px
+    template = cv2.pyrDown(template)    # 1960 x 1102 px
+    template = cv2.pyrDown(template)    # 980 x 551 px
+    template = template[120:380,280:700]
 
-template_contour, _ = cv2.findContours(template_masked, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-cv2.drawContours(template, template_contour, -1, (0,255,0), 1)
-cv2.imshow("template", template)
+    template_masked = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+    _, template_masked = cv2.threshold(template_masked, 112, 255, cv2.THRESH_BINARY_INV)
+    template_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
+    template_masked = cv2.morphologyEx(template_masked, cv2.MORPH_CLOSE, template_kernel, iterations=1)
+
+    template_contour, _ = cv2.findContours(template_masked, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    template_area = cv2.contourArea(template_contour[0])
+    template_perimeter = cv2.arcLength(template_contour[0], True)
+    # MMs.append(template_perimeter / (2 * math.sqrt(math.pi * template_area)) - 1)
+
+    cv2.drawContours(template, template_contour, -1, (0,255,0), 1)
+    cv2.imshow("template of " + path, template)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
