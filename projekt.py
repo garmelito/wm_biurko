@@ -2,6 +2,29 @@ import cv2
 import numpy
 import math
 
+def przedmiot(liczba) :
+    switcher = {
+        0 : "cienkopis",
+        1 : "zakreślacz",
+        2 : "marker",
+        3 : "dlugopis",
+        4 : "cykriel",
+        5 : "lupa",
+        6 : "nozyczki",
+        7 : "linijka",
+        8 : "katomierz",
+        9 : "zszywacz",
+        10 : "ekierka",
+        11 : "gumka",
+        12 : "spinacz",
+        13 : "spinacz",
+        14 : "spinacz biurowy",
+        15 : "spinacz biurowy",
+        16 : "spinacz biurowy",
+        17 : "spinacz biurowy"
+    }
+    return switcher.get(liczba)
+
 
 # def passs(x) :
 #     pass
@@ -29,37 +52,44 @@ import math
 table = cv2.imread("Photos/DSC_0344.jpg")
 table = cv2.pyrDown(table)
 table = cv2.pyrDown(table)
-# cv2.imshow("original", table)
-# table_HSV = cv2.cvtColor(table, cv2.COLOR_BGR2HSV)
-#
-# lower1 = numpy.array([0, 0, 0])
-# upper1 = numpy.array([46, 219, 169])
-# maska1 = cv2.inRange(table_HSV, lower1, upper1)
-# lower2 = numpy.array([46, 0, 132])
-# upper2 = numpy.array([176, 80, 234])
-# maska2 = cv2.inRange(table_HSV, lower2, upper2)
-# maska_or = cv2.bitwise_or(maska1, maska2)
-# maska_not = cv2.bitwise_not(maska_or)
-# table_masked = cv2.bitwise_and(table, table, mask=maska_not)
-# # cv2.imshow("masked", table_masked)
-#
-# kernel = numpy.ones((3,3), numpy.uint8)
-# kernel1 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5,5))
-# maska_not = cv2.morphologyEx(maska_not, cv2.MORPH_CLOSE, kernel1, iterations=2)
-# kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
-# maska_not = cv2.morphologyEx(maska_not, cv2.MORPH_OPEN, kernel2, iterations=1)
-# table_masked = cv2.bitwise_and(table, table, mask=maska_not)
-# # cv2.imshow("opened", table_masked)
-#
-# contours, _ = cv2.findContours(maska_not, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-# for i in range(len(contours)) :
-#     area = cv2.contourArea(contours[i])
-#     perimeter = cv2.arcLength(contours[i], True)
-#     if area > 20 :
-#         cv2.drawContours(table, contours, i, (255,0,0), 1)
-#     cv2.imshow("contours", table)
+cv2.imshow("original", table)
+table_HSV = cv2.cvtColor(table, cv2.COLOR_BGR2HSV)
+
+lower1 = numpy.array([0, 0, 0])
+upper1 = numpy.array([46, 219, 169])
+maska1 = cv2.inRange(table_HSV, lower1, upper1)
+lower2 = numpy.array([46, 0, 132])
+upper2 = numpy.array([176, 80, 234])
+maska2 = cv2.inRange(table_HSV, lower2, upper2)
+maska_or = cv2.bitwise_or(maska1, maska2)
+maska_not = cv2.bitwise_not(maska_or)
+table_masked = cv2.bitwise_and(table, table, mask=maska_not)
+# cv2.imshow("masked", table_masked)
+
+kernel = numpy.ones((3,3), numpy.uint8)
+kernel1 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5,5))
+maska_not = cv2.morphologyEx(maska_not, cv2.MORPH_CLOSE, kernel1, iterations=2)
+kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
+maska_not = cv2.morphologyEx(maska_not, cv2.MORPH_OPEN, kernel2, iterations=1)
+table_masked = cv2.bitwise_and(table, table, mask=maska_not)
+# cv2.imshow("opened", table_masked)
+
+contours, _ = cv2.findContours(maska_not, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+realContours = [0]
+realContours.clear()
+for i in range(len(contours)) :
+    area = cv2.contourArea(contours[i])
+    # perimeter = cv2.arcLength(contours[i], True)
+    if area > 200 :
+        realContours.append(contours[i])
+cv2.drawContours(table, realContours, -1, (255,0,0), 1)
+cv2.imshow("contours", table)
 
 
+areas = [0]
+areas.clear()
+perimeters = [0]
+perimeters.clear()
 MMs = [0]
 MMs.clear()
 
@@ -87,15 +117,38 @@ for i in range(346,364) :
             winner = j
 
     template_area = cv2.contourArea(template_contour[winner])
+    areas.append(template_area)
     template_perimeter = cv2.arcLength(template_contour[winner], True)
+    perimeters.append(template_perimeter)
     MMs.append(template_perimeter / (2 * math.sqrt(math.pi * template_area)) - 1)
 
     cv2.drawContours(template, template_contour, winner, (0,255,0), 2)
     # cv2.imshow("template of " + path, template)
     # cv2.imwrite("contoursOf" + path, template)
 
-for i in range(len(MMs)) :
-    print(MMs[i])
+# for i in range(len(MMs)) :
+#     print(areas[i])
+#     print(perimeters[i])
+#     print(MMs[i])
+
+
+for i in realContours :
+    area = cv2.contourArea(realContours[i])
+    perimeter = cv2.arcLength(realContours[i])
+    M = perimeter / (2 * math.sqrt(math.pi * area)) - 1
+
+    uncertainty = [0]
+    uncertainty.clear()
+    for i in range(0,18) :
+        uncertainty = abs(area - areas[i]) / area + abs(perimeter - perimeters[i]) / perimeter + abs(M - MMs[i]) / M
+
+    mostCertain = uncertainty = abs(area - areas[0]) / area + abs(perimeter - perimeters[0]) / perimeter + abs(M - MMs[0]) / M
+    mostCertainIndex = 0
+    for i in range(1,18) :
+        if uncertainty[i] < mostCertain :
+            mostCertain = uncertainty[i]
+            mostCertainIndex = i
+            print(przedmiot(i))
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
