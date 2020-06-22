@@ -3,6 +3,7 @@ import math
 import numpy
 from PIL import Image, ImageDraw, ImageFont
 
+
 def przedmiot(liczba) :
     switcher = {
         0 : "cienkopis",
@@ -25,29 +26,6 @@ def przedmiot(liczba) :
         17 : "spinacz biurowy"
     }
     return switcher.get(liczba)
-
-
-# def passs(x) :
-#     pass
-
-# image = numpy.zeros((400,1000,3), numpy.uint8)
-# cv2.namedWindow('image')
-
-# cv2.createTrackbar('h', 'image', 0, 255, passs)
-# cv2.createTrackbar('s', 'image', 0, 255, passs)
-# cv2.createTrackbar('v', 'image', 0, 255, passs)
-#
-# while(True):
-#     cv2.imshow('image', image)
-#     key = cv2.waitKey(1)
-#     if key == 27 :
-#         break
-#
-#     h = cv2.getTrackbarPos('h', 'image')
-#     s = cv2.getTrackbarPos('s', 'image')
-#     v = cv2.getTrackbarPos('v', 'image')
-#     image [ : ] = [h, s ,v]
-#     image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
 
 
 table = cv2.imread("Photos/DSC_0344.jpg")
@@ -128,11 +106,6 @@ for i in range(346,364) :
     # cv2.imshow("template of " + path, template)
     # cv2.imwrite("contoursOf" + path, template)
 
-# for i in range(len(MMs)) :
-#     print(areas[i])
-#     print(perimeters[i])
-#     print(MMs[i])
-
 mostCertainIndexes = [0]
 mostCertainIndexes.clear()
 centers = [(0, 0)]
@@ -145,7 +118,7 @@ for i in range(len(realContours)) :
     uncertainty = [0]
     uncertainty.clear()
     for j in range(0,18) :
-        uncertainty.append(abs(area - areas[j]) / area + abs(perimeter - perimeters[j]) / perimeter + abs(M - MMs[j]) / M)
+        uncertainty.append(abs(area - areas[j]) / areas[j] + abs(perimeter - perimeters[j]) / perimeters[j] + abs(M - MMs[j]) / MMs[j])
 
     mostCertain = uncertainty[0]
     mostCertainIndexes.append(0)
@@ -167,8 +140,17 @@ for i in range(len(realContours)) :
     draw.text(xy=centers[i], text=text, fill=(255, 0, 0), font=font_type)
 
 image.show("")
-image.save("labeledContours.jpg")
+image.save("labeledContours2.jpg")
+
+
+count = numpy.zeros((18,1), numpy.uint8)
+for i in range(len(realContours)) :
+    count[mostCertainIndexes[i]] = count[mostCertainIndexes[i]] + 1
+
+print("Ilosc elementow na biurku: ")
+for j in range(0,18) :
+    print(przedmiot(j), count[j])
+
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
