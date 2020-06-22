@@ -30,7 +30,6 @@ def przedmiot(liczba) :
 
 table = cv2.imread("Photos/DSC_0344.jpg")
 table = cv2.pyrDown(table)
-table = cv2.pyrDown(table)
 # cv2.imshow("original", table)
 table_HSV = cv2.cvtColor(table, cv2.COLOR_BGR2HSV)
 
@@ -59,7 +58,7 @@ realContours.clear()
 for i in range(len(contours)) :
     area = cv2.contourArea(contours[i])
     # perimeter = cv2.arcLength(contours[i], True)
-    if area > 200 :
+    if area > 800 :
         realContours.append(contours[i])
 cv2.drawContours(table, realContours, -1, (255,0,0), 1)
 # cv2.imshow("contours", table)
@@ -133,14 +132,14 @@ for i in range(len(realContours)) :
     centers.append((x,y))
 
 image = Image.open('table_contours.jpg')
-font_type = ImageFont.truetype("arial.ttf", 16)
+font_type = ImageFont.truetype("arial.ttf", 24)
 draw = ImageDraw.Draw(image)
 for i in range(len(realContours)) :
     text = przedmiot(mostCertainIndexes[i])
     draw.text(xy=centers[i], text=text, fill=(255, 0, 0), font=font_type)
 
 image.show("")
-image.save("labeledContours2.jpg")
+image.save("labeledContours3.jpg")
 
 
 count = numpy.zeros((18,1), numpy.uint8)
