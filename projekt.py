@@ -135,6 +135,8 @@ for i in range(346,364) :
 
 mostCertainIndexes = [0]
 mostCertainIndexes.clear()
+centers = [(0, 0)]
+centers.clear()
 for i in range(len(realContours)) :
     area = cv2.contourArea(realContours[i])
     perimeter = cv2.arcLength(realContours[i], True)
@@ -152,12 +154,17 @@ for i in range(len(realContours)) :
             mostCertain = uncertainty[j]
             mostCertainIndexes[i] = j
 
+    mu = cv2.moments(realContours[i], False)
+    x = int(mu["m10"] / mu["m00"])
+    y = int(mu["m01"] / mu["m00"])
+    centers.append((x,y))
+
 image = Image.open('table_contours.jpg')
 font_type = ImageFont.truetype("arial.ttf", 16)
 draw = ImageDraw.Draw(image)
 for i in range(len(realContours)) :
-    # text = przedmiot(i)
-    draw.text(xy=(50, 50), text="Hello World!", fill=(255, 0, 0), font=font_type)
+    text = przedmiot(mostCertainIndexes[i])
+    draw.text(xy=centers[i], text=text, fill=(255, 0, 0), font=font_type)
 
 image.show("")
 image.save("labeledContours.jpg")
