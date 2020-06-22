@@ -132,23 +132,24 @@ for i in range(346,364) :
 #     print(MMs[i])
 
 
-for i in realContours :
+for i in range(len(realContours)) :
     area = cv2.contourArea(realContours[i])
-    perimeter = cv2.arcLength(realContours[i])
+    perimeter = cv2.arcLength(realContours[i], True)
     M = perimeter / (2 * math.sqrt(math.pi * area)) - 1
 
     uncertainty = [0]
     uncertainty.clear()
     for i in range(0,18) :
-        uncertainty = abs(area - areas[i]) / area + abs(perimeter - perimeters[i]) / perimeter + abs(M - MMs[i]) / M
+        uncertainty.append(abs(area - areas[i]) / area + abs(perimeter - perimeters[i]) / perimeter + abs(M - MMs[i]) / M)
 
-    mostCertain = uncertainty = abs(area - areas[0]) / area + abs(perimeter - perimeters[0]) / perimeter + abs(M - MMs[0]) / M
+    mostCertain = uncertainty[0]
     mostCertainIndex = 0
     for i in range(1,18) :
         if uncertainty[i] < mostCertain :
             mostCertain = uncertainty[i]
             mostCertainIndex = i
-            print(przedmiot(i))
+
+    print(przedmiot(mostCertainIndex))
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
