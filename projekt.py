@@ -1,6 +1,7 @@
 import cv2
-import numpy
 import math
+import numpy
+from PIL import Image, ImageDraw, ImageFont
 
 def przedmiot(liczba) :
     switcher = {
@@ -52,7 +53,7 @@ def przedmiot(liczba) :
 table = cv2.imread("Photos/DSC_0344.jpg")
 table = cv2.pyrDown(table)
 table = cv2.pyrDown(table)
-cv2.imshow("original", table)
+# cv2.imshow("original", table)
 table_HSV = cv2.cvtColor(table, cv2.COLOR_BGR2HSV)
 
 lower1 = numpy.array([0, 0, 0])
@@ -83,7 +84,8 @@ for i in range(len(contours)) :
     if area > 200 :
         realContours.append(contours[i])
 cv2.drawContours(table, realContours, -1, (255,0,0), 1)
-cv2.imshow("contours", table)
+# cv2.imshow("contours", table)
+cv2.imwrite("table_contours.jpg", table)
 
 
 areas = [0]
@@ -131,7 +133,8 @@ for i in range(346,364) :
 #     print(perimeters[i])
 #     print(MMs[i])
 
-
+mostCertainIndexes = [0]
+mostCertainIndexes.clear()
 for i in range(len(realContours)) :
     area = cv2.contourArea(realContours[i])
     perimeter = cv2.arcLength(realContours[i], True)
@@ -139,17 +142,25 @@ for i in range(len(realContours)) :
 
     uncertainty = [0]
     uncertainty.clear()
-    for i in range(0,18) :
-        uncertainty.append(abs(area - areas[i]) / area + abs(perimeter - perimeters[i]) / perimeter + abs(M - MMs[i]) / M)
+    for j in range(0,18) :
+        uncertainty.append(abs(area - areas[j]) / area + abs(perimeter - perimeters[j]) / perimeter + abs(M - MMs[j]) / M)
 
     mostCertain = uncertainty[0]
-    mostCertainIndex = 0
-    for i in range(1,18) :
-        if uncertainty[i] < mostCertain :
-            mostCertain = uncertainty[i]
-            mostCertainIndex = i
+    mostCertainIndexes.append(0)
+    for j in range(1,18) :
+        if uncertainty[j] < mostCertain :
+            mostCertain = uncertainty[j]
+            mostCertainIndexes[i] = j
 
-    print(przedmiot(mostCertainIndex))
+image = Image.open('table_contours.jpg')
+font_type = ImageFont.truetype("arial.ttf", 16)
+draw = ImageDraw.Draw(image)
+for i in range(len(realContours)) :
+    # text = przedmiot(i)
+    draw.text(xy=(50, 50), text="Hello World!", fill=(255, 0, 0), font=font_type)
+
+image.show("")
+image.save("labeledContours.jpg")
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
